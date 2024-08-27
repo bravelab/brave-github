@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Repo Info</title>
+    <!-- Include Tailwind CSS via CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center text-gray-800 mb-8">GitHub Repository Information</h1>
+        <form id="repoForm" method="POST" class="max-w-lg mx-auto bg-white p-8 rounded-lg shadow-lg">
+            <label for="repo_url" class="block text-gray-700 text-sm font-bold mb-2">Enter GitHub Repository URL:</label>
+            <input type="text" id="repo_url" name="repo_url" value="{{ repo_url }}" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <button type="submit" class="w-full mt-4 bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-600">Get Info</button>
+        </form>
+
+        {% if repo_data %}
+            <div class="mt-8 bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Repository Information</h2>
+                <table class="min-w-full bg-white border border-gray-300">
+                    <tbody>
+                        <tr class="border-b">
+                            <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-700">Title</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ repo_data.title }}</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-700">Category</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ repo_data.category }}</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-700">Description</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ repo_data.description }}</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-700">Author</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ repo_data.author }}</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-700">Country</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ repo_data.country }}</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-700">Language</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ repo_data.language }}</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-700">License</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ repo_data.license }}</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-700">GitHub</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <a href="{{ repo_data.github }}" class="text-indigo-500 hover:underline">{{ repo_data.github }}</a>
+                            </td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-700">GitHub Stars</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ repo_data.github_stars }}</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-700">Created</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ repo_data.created }}</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-700">Last Update</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ repo_data.last_update }}</td>
+                        </tr>
+                        {% if repo_data.enhanced_description %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-700">Enhanced Information</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <table class="min-w-full bg-gray-100 border border-gray-300">
+                                    <tbody>
+                                        <tr class="border-b">
+                                            <td class="px-4 py-2 whitespace-nowrap font-semibold text-gray-700">Enhanced Description</td>
+                                            <td class="px-4 py-2 whitespace-nowrap"><pre>{{ repo_data.enhanced_description }}</pre></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <!-- Add to Webflow Collection Button -->
+                <form method="POST" class="mt-4">
+                    <input type="hidden" name="repo_url" value="{{ repo_url }}">
+                    <button type="submit" name="add_to_webflow" class="w-full bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600">Add to Webflow Collection</button>
+                </form>
+
+                {% if webflow_response %}
+                    <div class="mt-4 p-4 bg-blue-100 text-blue-700 rounded-lg">
+                        <strong>Webflow Response:</strong>
+                        <pre>{{ webflow_response | tojson }}</pre>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>
