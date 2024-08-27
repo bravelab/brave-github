@@ -2,7 +2,7 @@
 
 This project is a Flask-based web application that allows users to fetch GitHub repository information and manually add it to a Webflow collection. The application uses the GitHub API to retrieve repository data and the Webflow API to add this data to a Webflow CMS collection.
 
-![Screenshot of the Application](static/screenshot.jpeg)
+![Screenshot of the Application](brave_github/static/screenshot.jpeg)
 
 
 ## Features
