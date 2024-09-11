@@ -14,15 +14,18 @@ app = Flask(__name__)
 WEBFLOW_API_KEY = os.getenv("WEBFLOW_API_KEY")
 WEBFLOW_COLLECTION_ID = os.getenv("WEBFLOW_COLLECTION_ID")
 GITHUB_API_URL = "https://api.github.com/repos/"
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "token")
 USE_OPENAI_ENHANCED_DATA = (os.getenv("USE_OPENAI_ENHANCED_DATA", "false").strip().lower() == "true")
 
 
 def get_repo_data(repo_url):
     parts = repo_url.split('/')
     owner, repo = parts[-2], parts[-1]
-    
-    response = requests.get(f"{GITHUB_API_URL}{owner}/{repo}")
-    
+
+    response = requests.get(f"{GITHUB_API_URL}{owner}/{repo}", headers={
+        'Authorization': f'token {GITHUB_TOKEN}'
+    })
+
     if response.status_code == 200:
         data = response.json()
         repo_info = {
@@ -34,13 +37,13 @@ def get_repo_data(repo_url):
             "language": data.get("language", "Not specified"),
             "license": data.get("license", {}).get("name", "Not specified") if data.get("license") else "No license",
             "github": repo_url,
-            "github_stars": data.get("stargazers_count", 0),
+            "stars": data.get("stargazers_count", 0),
             "created": data.get("created_at", "Unknown").split('T')[0],
             "last_update": data.get("updated_at", "Unknown").split('T')[0]
         }
         return repo_info
     else:
-        return {"error": "Repository not found or invalid URL."}
+        raise Exception(f"Repository not found or invalid URL: {repo_url}, {str(response)}")
 
 def generate_enhanced_description(repo_data):
     output = None
@@ -85,12 +88,12 @@ def add_to_webflow_collection(repo_data):
             "slug": repo_data["title"].lower().replace(" ", "-"),  # Ensure the slug is unique
             "founder-full-name": repo_data["author"],  # Adjust this field name as necessary
             "description": repo_data["description"],  # Adjust this field name as necessary
-            "github-url": repo_data["github"],  # Adjust this field name as necessary
-            "main-language": repo_data["language"],  # Adjust this field name as necessary
-            #"license": repo_data["license"],  # Adjust this field name as necessary
-            "github-stars": repo_data["github_stars"],  # Adjust this field name as necessary
-            "year-created": created_year,
-            "github-last-update": last_update_year
+            "github": repo_data["github"],  # Adjust this field name as necessary
+            "language": repo_data["language"],  # Adjust this field name as necessary
+            "license": repo_data["license"],  # Adjust this field name as necessary
+            "stars": repo_data["github_stars"],  # Adjust this field name as necessary
+            "created": created_year,
+            "last-update": last_update_year
         },
         "isArchived": False,
         "isDraft": False
@@ -107,6 +110,7 @@ def index():
     repo_data = None
     webflow_response = None
     if request.method == 'POST':
+       
         if 'repo_url' in request.form:
             repo_url = request.form.get('repo_url')
             repo_data = get_repo_data(repo_url)
@@ -115,10 +119,26 @@ def index():
                 enhanced_description = generate_enhanced_description(repo_data)
                 repo_data['enhanced_description'] = enhanced_description
 
-        if 'add_to_webflow' in request.form and repo_data:
+        if 'add_to_webflow' in request.form:
+            repo_url = request.form.get('repo_url')
+            repo_data = {
+                'title': request.form.get('title'),
+                'description': request.form.get('description'),
+                'author': request.form.get('author'),
+                'language': request.form.get('language'),
+                'license': request.form.get('license'),
+                'github': repo_url,
+                'github_stars': request.form.get('github_stars'),
+                'created': request.form.get('created'),
+                'last_update': request.form.get('last_update')
+            }
             webflow_response = add_to_webflow_collection(repo_data)
     
-    return render_template('index.html', repo_data=repo_data, repo_url=repo_url, webflow_response=webflow_response, conf={'use_openai': USE_OPENAI_ENHANCED_DATA})
+    return render_template('index.html', 
+                           repo_data=repo_data, 
+                           repo_url=repo_url, 
+                           webflow_response=webflow_response, 
+                           conf={'use_openai': USE_OPENAI_ENHANCED_DATA})
 
 if __name__ == "__main__":
     app.run(debug=True)
